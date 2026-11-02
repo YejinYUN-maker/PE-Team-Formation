@@ -924,10 +924,13 @@ section[data-testid="stSidebar"][aria-expanded="false"] ~ section [data-testid="
 [data-testid="stAppViewContainer"]:has(section[data-testid="stSidebar"][aria-expanded="false"]) .block-container {
     max-width: 100%; padding-left: 3rem; padding-right: 3rem; }
 [data-testid="stSidebarUserContent"] { padding-top: 0.25rem; }
-.side-title { font-size: 1.15rem; font-weight: 700; line-height: 1.45; margin: -0.75rem 0 0.9rem; }
+.side-title { font-size: 1.12rem; font-weight: 700; line-height: 1.45; margin: -0.75rem 0 0.9rem; }
 section[data-testid="stSidebar"] label p,
-section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p { font-size: 0.95rem; }
-section[data-testid="stSidebar"] h3 { font-size: 1.15rem; }
+section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
+section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] li { font-size: 0.95rem; }
+section[data-testid="stSidebar"] li { font-size: 0.95rem; line-height: 1.6; }
+section[data-testid="stSidebar"] li p { font-size: 0.95rem !important; margin: 0; }
+section[data-testid="stSidebar"] h3 { font-size: 1.35rem; }
 
 /* ── 세로 간격 통일 ── */
 [data-testid="stVerticalBlock"] { gap: 0.75rem; }
@@ -1681,7 +1684,7 @@ def page_student(prefill=""):
 
 # ─── 메인 ───────────────────────────────────────────────────────
 TEACHER_GUIDE = """
-**:material/checklist: 교사 사용 방법**
+<div class="side-title" style="margin:0 0 0.3rem;"><span class="mi">checklist</span> 교사 사용 방법</div>
 
 1. **② 팀 편성(교사)** 에서 종목 선택
 2. 팀 편성 요인 선택
@@ -1692,7 +1695,7 @@ TEACHER_GUIDE = """
 7. 주장 · 결합 · 분리 지정 (선택사항)
 8. :material/rocket_launch: 팀 편성 실행
 
-<div style="color:#e03131; font-size:0.85rem; line-height:1.5; margin-top:-0.6rem;">※ Streamlit 서버 특성상 저장된 자료가<br>초기화될 수 있으므로, 필요한 경우 반드시<br>학생/팀 편성 결과 데이터를 저장하시오.</div>
+<div style="color:#e03131; font-size:0.78rem; line-height:1.5; margin-top:-0.6rem;">※ Streamlit 서버 특성상 저장된 자료가<br>초기화될 수 있으므로, 필요한 경우 반드시<br>학생/팀 편성 결과 데이터를 저장하시오.</div>
 """
 
 
