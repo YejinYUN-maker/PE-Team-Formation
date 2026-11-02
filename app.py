@@ -924,10 +924,10 @@ section[data-testid="stSidebar"][aria-expanded="false"] ~ section [data-testid="
 [data-testid="stAppViewContainer"]:has(section[data-testid="stSidebar"][aria-expanded="false"]) .block-container {
     max-width: 100%; padding-left: 3rem; padding-right: 3rem; }
 [data-testid="stSidebarUserContent"] { padding-top: 0.25rem; }
-.side-title { font-size: 1.35rem; font-weight: 700; line-height: 1.45; margin: -0.75rem 0 0.9rem; }
+.side-title { font-size: 1.15rem; font-weight: 700; line-height: 1.45; margin: -0.75rem 0 0.9rem; }
 section[data-testid="stSidebar"] label p,
 section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p { font-size: 0.95rem; }
-section[data-testid="stSidebar"] h3 { font-size: 1.35rem; }
+section[data-testid="stSidebar"] h3 { font-size: 1.15rem; }
 
 /* ── 세로 간격 통일 ── */
 [data-testid="stVerticalBlock"] { gap: 0.75rem; }
