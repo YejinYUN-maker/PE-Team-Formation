@@ -1,0 +1,6 @@
+streamlit>=1.40
+pandas
+numpy
+pulp==2.9.0
+openpyxl
+qrcode
