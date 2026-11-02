@@ -926,7 +926,7 @@ section[data-testid="stSidebar"][aria-expanded="false"] ~ section [data-testid="
 [data-testid="stSidebarUserContent"] { padding-top: 0.25rem; }
 .side-title { font-size: 1.35rem; font-weight: 700; line-height: 1.45; margin: -0.75rem 0 0.9rem; }
 section[data-testid="stSidebar"] label p,
-section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p { font-size: 1.08rem; }
+section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p { font-size: 0.95rem; }
 section[data-testid="stSidebar"] h3 { font-size: 1.35rem; }
 
 /* ── 세로 간격 통일 ── */
