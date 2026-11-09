@@ -1513,6 +1513,52 @@ def write_result_sheets(xw, r):
     stu_view.to_excel(xw, sheet_name="편성 결과", index=False)
 
 
+FACTOR_UNIT = {"paps": "PAPS 등급", "years": "5구간", "binary": "인원", "count5": "1~5점", "likert": "1~5점"}
+
+
+def factor_view(r):
+    """팀별 요인 평균 표 + '학급 평균'·'최고·최저 점수 차' 행 (화면 표시용 문자열 표)"""
+    stu, team, factors, T = r["stu"], r["team"], r["factors"], r["n_teams"]
+    col = {f: f"{f} [{FACTOR_UNIT.get(kind(f), '1~5점')}]" for f in factors}
+    members = [stu[stu["배정 팀"] == t] for t in range(1, T + 1)]
+    total = stu["종합 점수(0~100)"]
+    team_sc = [float(m["종합 점수(0~100)"].mean()) for m in members]
+
+    rows = []
+    for t, m in enumerate(members):
+        d = {"구분": team.loc[t, "팀"], "주장": team.loc[t, "주장"], "종합점수": f"{team_sc[t]:.1f}"}
+        for f in factors:
+            if kind(f) == "binary":
+                d[col[f]] = f"{int(np.nansum(m[f]))}명"
+            else:
+                d[col[f]] = f"{float(np.nanmean(m[f])):.2f}" if m[f].notna().any() else ""
+        rows.append(d)
+
+    avg = {"구분": "학급 평균", "주장": "", "종합점수": f"{float(total.mean()):.1f}"}
+    gap = {"구분": "최고·최저 점수 차", "주장": "", "종합점수": f"{max(team_sc) - min(team_sc):.1f}"}
+    for f in factors:
+        if kind(f) == "binary":
+            cnt = [int(np.nansum(m[f])) for m in members]
+            avg[col[f]] = f"{sum(cnt) / T:.1f}명"
+            gap[col[f]] = f"{max(cnt) - min(cnt)}명"
+        else:
+            vals = [float(np.nanmean(m[f])) for m in members if m[f].notna().any()]
+            avg[col[f]] = f"{float(np.nanmean(stu[f])):.2f}"
+            gap[col[f]] = f"{max(vals) - min(vals):.2f}" if vals else ""
+    rows += [avg, gap]
+
+    df = pd.DataFrame(rows)
+    if not any(team["주장"].astype(str).str.len() > 0):
+        df = df.drop(columns="주장")
+    n_team_rows = T
+
+    def style_row(row):
+        if row.name >= n_team_rows:
+            return ["background-color: #eef2f7; font-weight: 600"] * len(row)
+        return [""] * len(row)
+    return df.style.apply(style_row, axis=1)
+
+
 def show_result(r):
     ss = st.session_state
     stu, team, factors, n_teams = r["stu"], r["team"], r["factors"], r["n_teams"]
@@ -1546,22 +1592,23 @@ def show_result(r):
             col.markdown(f'<div class="team-card"><h4><span class="mi">groups</span> 팀 {team_label(t)} &nbsp;<small style="color:#888">'
                          f'팀원 수 {len(mem)}명 · 종합점수 {s:.1f}점</small></h4>{badges}</div>', unsafe_allow_html=True)
 
-    # 2. 팀 간 균형 지표
+    # 2. 팀 간 균형 지표 (팀별 종합점수 · 요인 평균 + 학급 평균 · 최고·최저 점수 차)
     sub_header("팀 간 균형 지표")
-    m1, m2, m3, m4, m5 = st.columns(5)
-    metric(m1, f"{min(sc):.1f}", "최저 팀 종합점수")
-    metric(m2, f"{max(sc):.1f}", "최고 팀 종합점수")
-    metric(m3, f"{max(sc) - min(sc):.1f}", "팀 간 종합점수 차")
-    metric(m4, f"{float(np.std(sc, ddof=0)):.2f}", "팀 종합점수 표준편차")
-    metric(m5, f"{r['objective']:.4f}", "목적함수 최솟값")
-    st.caption("※ 목적함수 최솟값은 요인별로 팀 평균과 학급 평균의 차이(표준편차 단위)에 가중치를 곱해 모두 더한 값의 최솟값으로, "
-               "0에 가까울수록 팀 간 균형이 좋음을 의미한다.")
+    st.dataframe(factor_view(r), hide_index=True, use_container_width=True)
+    st.caption(f"※ {n_teams}개 팀의 종합점수는 {min(sc):.1f}~{max(sc):.1f}점으로, 가장 높은 팀과 가장 낮은 팀의 "
+               f"차이는 100점 만점에 {max(sc) - min(sc):.1f}점이다.  \n"
+               "　학생 종합점수 = Σ 요인 가중치 × (요인 점수 − 1) ÷ 4 × 100 (체육특기자 여부는 해당 1·비해당 0), "
+               "팀 종합점수 = 팀원 종합점수의 평균")
+    st.caption("※ 각 팀의 요인 평균이 학급 평균에 가까울수록, '최고·최저 점수 차'가 작을수록 팀 간 균형이 맞음을 의미한다.")
 
-    # 3. 팀별 요인 평균
-    sub_header("팀별 요인 평균(1~5점; 체육특기자 여부는 인원 수)")
-    if any(kind(f) == "paps" for f in factors):
-        st.caption("※ PAPS 요인은 등급 평균으로, 값이 낮을수록 우수함을 의미한다.")
-    st.dataframe(team, hide_index=True, use_container_width=True)
+    # 3. 상세 지표 (필요할 때 열어봄)
+    with st.expander(":material/analytics: 상세 지표"):
+        d1, d2 = st.columns(2)
+        metric(d1, f"{float(np.std(sc, ddof=0)):.2f}", "팀 종합점수 표준편차")
+        metric(d2, f"{r['objective']:.4f}", "목적함수 최솟값")
+        st.caption("※ 팀 종합점수 표준편차 = √[ Σ (팀 종합점수 − 전체 팀 종합점수 평균)² ÷ 팀 수 ]")
+        st.caption("※ 목적함수 최솟값 Z = Σ(모든 팀·요인) 요인 가중치 × |팀의 요인 평균 − 학급 평균| ÷ 요인의 학급 표준편차 "
+                   "— 0에 가까울수록 균형")
     stu_view, _, _ = result_tables(r)
     with st.expander(":material/list: 학생별 결과"):
         st.dataframe(stu_view, hide_index=True, use_container_width=True)
